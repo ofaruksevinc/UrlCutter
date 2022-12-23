@@ -1,10 +1,13 @@
 ﻿using System;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 
 namespace UrlCutter.Models
 {
     public class ShortUrl
     {
-        public int Id { get; set; }
+        [BsonId]
+        public ObjectId Id { get; set; }
         public string OrgUrl { get; set; }
         public string CutUrl { get; set; }
         public string RandomChar { get; set; }

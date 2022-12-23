@@ -1,7 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
+using System.Collections.Generic;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using UrlCutter.Models;
 
@@ -31,8 +35,19 @@ namespace UrlCutter.Controllers
             var user_info = await userList.AsQueryable().FirstOrDefaultAsync(a => a.Name == user.Name && a.pass == user.pass);
             if (user_info != null)
             {
-
+                HttpContext.Session.SetString("role", user.Role.ToString());
+                HttpContext.Session.SetString("user", user.Name.ToString());
+                HttpContext.Session.SetString("password", user.pass.ToString());
+                var userClaim = new List<Claim>
+                {
+                    new Claim(ClaimTypes.Name, user_info.Name)
+                };
+                var identity = new ClaimsIdentity(userClaim,"login");
+                ClaimsPrincipal principal = new ClaimsPrincipal(identity);
+                await HttpContext.SignInAsync(principal);
+                return RedirectToAction("Index", "Home");
             }
+            return View();
         }
     }
 }

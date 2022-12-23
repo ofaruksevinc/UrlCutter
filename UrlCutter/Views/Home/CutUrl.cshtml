@@ -1,6 +1,12 @@
-﻿@model UrlCutter.Models.ShortUrl
+﻿@model ShortUrl
 @{
+    
 }
-<a href="@Model.OrgUrl">
-	@Model.CutUrl
-</a>
+
+<div style="width=100%; padding: 30px;">
+    <div>
+        <div>Unique : @Model.UniqueChar</div>
+        <div>Cut Url : <a href="@Model.OrgUrl">@Model.CutUrl</a></div>
+        <div>Org Url: @Model.OrgUrl</div>
+    </div>
+</div>
