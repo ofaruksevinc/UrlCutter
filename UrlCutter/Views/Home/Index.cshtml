@@ -2,31 +2,34 @@
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>A url shortener built with ASP.NET Core and Mongo DB</p>
+<div class="d-flex justify-content-center align-items-center" style=" font-size:70px; font-family:'Liberation Serif'";">
+    Link Kısaltma Servisine Hoşgeldiniz.
 </div>
 
-<div style="width: 100%; margin-top: 60px;">
+
+<div style="width: 100%;">
     <div style="width: 65%; margin-left: auto; margin-right: auto;">
-        <form id="form" style="text-align: center;" asp-action="CutUrl" method="post">
+        <form class="class=" d-flex justify-content-center align-items-center"" id="form" asp-action="CutUrl" method="post">
             <input type="text"
-                   placeholder="Enter Url ..."
+                class="form-control mb-2"
+                   placeholder="Url giriniz."
                    style="width: 100%; border-radius: 5px; height: 45px;"
                    name="OrgUrl" />
             <input type="text"
-                   placeholder="Sona Erme Süresini Giriniz ..."
+                   class="form-control mb-2"
+                   placeholder="Sona Erme Süresini Belirtiniz."
                    style="width: 100%; border-radius: 5px; height: 45px;"
                    name="EndTime" />
             <input type="text"
-                   placeholder="Enter Url ..."
+                   class="form-control mb-2"
+                   placeholder="Farklı Kısalma Adını Giriniz."
                    style="width: 100%; border-radius: 5px; height: 45px;"
                    name="UniqueChar" />
-
-            <button style="background-color: darkgreen; color: white; padding: 10px; margin-top: 25px; border-radius: 8px;"
+            <button  class="btn btn-info"
                     type="submit">
                 Shorten Url
             </button>
         </form>
     </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js" integrity="sha384-mQ93GR66B00ZXjt0YO5KlohRA5SY2XofN4zfuZxLkoj1gXtW8ANNCe9d5Y3eG5eD" crossorigin="anonymous"></script>

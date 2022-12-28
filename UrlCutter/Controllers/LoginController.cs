@@ -17,7 +17,7 @@ namespace UrlCutter.Controllers
         private readonly IMongoDatabase mongoDatabase_database;
         private readonly IMongoCollection<User> _user;
 
-        public LoginController(ILogger<LoginController> logger, IMongoDatabase mongoDatabase_database, IMongoCollection<User> user)
+        public LoginController(ILogger<LoginController> logger)
         {
             _logger = logger;
             var connect = "mongodb+srv://faruksevinc:pasiflora45@yazlab.92ir6av.mongodb.net/?retryWrites=true&w=majority";
@@ -47,7 +47,7 @@ namespace UrlCutter.Controllers
                 await HttpContext.SignInAsync(principal);
                 return RedirectToAction("Index", "Home");
             }
-            return View();
+             return View();
         }
     }
 }
