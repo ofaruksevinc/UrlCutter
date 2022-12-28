@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -25,29 +26,24 @@ namespace LinkShortener.Controllers
             var mongo = new MongoClient(connect);
             mongoDatabase_database = mongo.GetDatabase("Yazlab");
         }
-       // [Authorize]
-
-        public IActionResult Index()
-        {
-            return View();
-        }
+        // [Authorize]
 
         [HttpGet]
         public async Task<IActionResult> Index(string u)
         {
+            u = HttpContext.Session.GetString("user");
             var userUrlList = mongoDatabase_database.GetCollection<ShortUrl>("shortUrls");
             var userUrl = userUrlList.AsQueryable().Where(x => x.user == HttpContext.Session.GetString("user"));
             var ShortUrlList = mongoDatabase_database.GetCollection<ShortUrl>("shortUrls");
             var ShortUrl = await ShortUrlList
                 .AsQueryable()
                 .FirstOrDefaultAsync(x => x.UniqueChar == u);
-
-            if (ShortUrl == null)
+            if (u != null)
             {
-                ViewBag.UserUrls = userUrl;
-                return View();
+                    ViewBag.UserUrls = userUrl;
+                    return View();
             }
-            return Redirect(ShortUrl.OrgUrl);
+            return RedirectToAction("Index","Login");
         }
 
         [HttpPost]

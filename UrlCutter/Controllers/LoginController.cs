@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -26,6 +27,7 @@ namespace UrlCutter.Controllers
         }
         public async Task<ActionResult> Index()
         {
+            HttpContext.Session.Clear();
             return View();
         }
         [HttpPost]
@@ -35,19 +37,42 @@ namespace UrlCutter.Controllers
             var user_info = await userList.AsQueryable().FirstOrDefaultAsync(a => a.Name == user.Name && a.pass == user.pass);
             if (user_info != null)
             {
-                HttpContext.Session.SetString("role", user.Role.ToString());
-                HttpContext.Session.SetString("user", user.Name.ToString());
-                HttpContext.Session.SetString("password", user.pass.ToString());
-                var userClaim = new List<Claim>
+                if (user_info.Role == false)
+                {
+                    HttpContext.Session.SetString("role", user_info.Role.ToString());
+                    HttpContext.Session.SetString("user", user_info.Name.ToString());
+                    HttpContext.Session.SetString("password", user_info.pass.ToString());
+                    var userClaim = new List<Claim>
                 {
                     new Claim(ClaimTypes.Name, user_info.Name)
                 };
-                var identity = new ClaimsIdentity(userClaim,"login");
-                ClaimsPrincipal principal = new ClaimsPrincipal(identity);
-                await HttpContext.SignInAsync(principal);
-                return RedirectToAction("Index", "Home");
+                    var identity = new ClaimsIdentity(userClaim, "login");
+                    ClaimsPrincipal principal = new ClaimsPrincipal(identity);
+                    await HttpContext.SignInAsync(principal);
+                    return RedirectToAction("Index", "Home");
+                }
+                else
+                {
+                    HttpContext.Session.SetString("role", user_info.Role.ToString());
+                    HttpContext.Session.SetString("user", user_info.Name.ToString());
+                    HttpContext.Session.SetString("password", user_info.pass.ToString());
+                    var userClaim = new List<Claim>
+                {
+                    new Claim(ClaimTypes.Name, user_info.Name)
+                };
+                    var identity = new ClaimsIdentity(userClaim, "login");
+                    ClaimsPrincipal principal = new ClaimsPrincipal(identity);
+                    await HttpContext.SignInAsync(principal);
+                    return RedirectToAction("Index", "Admin");
+                }
             }
-             return View();
+            return View();
+        }
+
+        public async  Task<IActionResult> Logout()
+        {
+           await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            return RedirectToAction("Index", "Login");
         }
     }
 }

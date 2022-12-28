@@ -39,7 +39,7 @@ namespace LinkShortener.Controllers
                 {
                     Name = user.Name,
                     pass = user.pass,
-                    Role = false
+                    Role = true
                 };
                 await userCollection.InsertOneAsync(info);
                 return RedirectToAction("Index", "Login");
