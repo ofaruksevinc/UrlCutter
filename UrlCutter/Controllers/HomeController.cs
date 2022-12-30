@@ -32,9 +32,9 @@ namespace LinkShortener.Controllers
         public async Task<IActionResult> Index(string u)
         {
             u = HttpContext.Session.GetString("user");
-            var userUrlList = mongoDatabase_database.GetCollection<ShortUrl>("shortUrls");
+            var userUrlList = mongoDatabase_database.GetCollection<ShortUrl>("cut-urls");
             var userUrl = userUrlList.AsQueryable().Where(x => x.user == HttpContext.Session.GetString("user"));
-            var ShortUrlList = mongoDatabase_database.GetCollection<ShortUrl>("shortUrls");
+            var ShortUrlList = mongoDatabase_database.GetCollection<ShortUrl>("cut-urls");
             var ShortUrl = await ShortUrlList
                 .AsQueryable()
                 .FirstOrDefaultAsync(x => x.UniqueChar == u);
@@ -47,34 +47,42 @@ namespace LinkShortener.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CutUrl(string OrgUrl, string rndChar, int EndTime, string user)
+        public async Task<IActionResult> CutUrl(string OrgUrl, string uniqueChar, int EndTime, string user)
         {
-            //user = HttpContext.Session.GetString("user");
+            user = HttpContext.Session.GetString("user");
             var ShortUrlList = mongoDatabase_database.GetCollection<ShortUrl>("cut-urls");
-            var originalUrlColleciton = mongoDatabase_database.GetCollection<OriginalUrl>("org-urls");
+            var originalUrlList = mongoDatabase_database.GetCollection<OriginalUrl>("org-urls");
+            var userList = mongoDatabase_database.GetCollection<User>("users");
 
             var ShortUrl = await ShortUrlList
                 .AsQueryable()
                 .FirstOrDefaultAsync(x => x.OrgUrl == OrgUrl);
-            var originalUrl = await originalUrlColleciton.AsQueryable().FirstOrDefaultAsync(x => x.Url == OrgUrl);
+            var originalUrl = await originalUrlList.AsQueryable().FirstOrDefaultAsync(x => x.Url == OrgUrl);
+            var cr_user = await userList.AsQueryable().FirstOrDefaultAsync(x => x.Name == user);
 
             if (ShortUrl != null)
             {
                 if (ShortUrl.user != user)
                 {
-                    string uniqueChar = GetRandomAlphanumericString();
-                    if (rndChar == null)
+                    string rndChar = GetRandomAlphanumericString();
+                    if (uniqueChar == null)
                     {
                         ShortUrl = new ShortUrl
                         {
                             CreatedTime = DateTime.UtcNow,
                             OrgUrl = OrgUrl,
-                            UniqueChar = uniqueChar,
-                            RandomChar = "",
+                            RandomChar = rndChar,
+                            UniqueChar = "",
                             EndTime = DateTime.UtcNow.AddDays(EndTime),
-                            CutUrl = $"{ServiceUrl}/{uniqueChar}",
-                            user = user
+                            CutUrl = $"{ServiceUrl}/{rndChar}",
+                            user = user,
+                            Click = 1
                         };
+                        cr_user.Kısaltma += 1;
+                        var filter = Builders<User>.Filter.Eq(s => s.Name, user);
+                        var update = Builders<User>.Update.Set(s => s.Kısaltma, cr_user.Kısaltma);
+                        userList.UpdateOneAsync(filter, update);
+                        await ShortUrlList.InsertOneAsync(ShortUrl);
 
 
                     }
@@ -84,48 +92,52 @@ namespace LinkShortener.Controllers
                         {
                             CreatedTime = DateTime.UtcNow,
                             OrgUrl = OrgUrl,
-                            UniqueChar = uniqueChar,
                             RandomChar = rndChar,
+                            UniqueChar = uniqueChar,
                             EndTime = DateTime.UtcNow.AddDays(EndTime),
                             CutUrl = $"{ServiceUrl}/{uniqueChar}",
-                            user = user
+                            user = user,
+                            Click = 1
                         };
+                        cr_user.Kısaltma += 1;
+                        var filter = Builders<User>.Filter.Eq(s => s.Name, user);
+                        var update = Builders<User>.Update.Set(s => s.Kısaltma, cr_user.Kısaltma);
+                        userList.UpdateOneAsync(filter, update);
                     }
-
-                    originalUrl.Click += 1;
-                    var filter = Builders<OriginalUrl>.Filter.Eq(s => s.Url, ShortUrl.OrgUrl);
-                    var update = Builders<OriginalUrl>.Update.Set(s => s.Click, originalUrl.Click);
-                    originalUrlColleciton.UpdateOneAsync(filter, update);
                     await ShortUrlList.InsertOneAsync(ShortUrl);
                 }
                 else
                 {
-                    originalUrl.Click += 1;
-                    var filter = Builders<OriginalUrl>.Filter.Eq(s => s.Url, ShortUrl.OrgUrl);
-                    var update = Builders<OriginalUrl>.Update.Set(s => s.Click, originalUrl.Click);
-                    originalUrlColleciton.UpdateOneAsync(filter, update);
+                    cr_user.Kısaltma += 1;
+                    var filter = Builders<User>.Filter.Eq(s => s.Name, user);
+                    var update = Builders<User>.Update.Set(s => s.Kısaltma, cr_user.Kısaltma);
+                    userList.UpdateOneAsync(filter, update);
                 }
             }
             else
             {
-                string uniqueChar = GetRandomAlphanumericString();
-                if (rndChar == null)
+                string rndChar = GetRandomAlphanumericString();
+                if (uniqueChar == null)
                 {
                     ShortUrl = new ShortUrl
                     {
                         CreatedTime = DateTime.UtcNow,
                         OrgUrl = OrgUrl,
-                        UniqueChar = uniqueChar,
-                        RandomChar = "",
+                        RandomChar = rndChar,
+                        UniqueChar = "",
                         EndTime = DateTime.UtcNow.AddDays(EndTime),
-                        CutUrl = $"{ServiceUrl}/{uniqueChar}",
-                        user = "atayaz"
+                        CutUrl = $"{ServiceUrl}/{rndChar}",
+                        user = user,
+                        Click = 1
                     };
                     originalUrl = new OriginalUrl
                     {
-                        Url = OrgUrl,
-                        Click = 1
+                        Url = OrgUrl
                     };
+                    cr_user.Kısaltma += 1;
+                    var filter = Builders<User>.Filter.Eq(s => s.Name, user);
+                    var update = Builders<User>.Update.Set(s => s.Kısaltma, cr_user.Kısaltma);
+                    userList.UpdateOneAsync(filter, update);
 
                 }
                 else
@@ -134,19 +146,23 @@ namespace LinkShortener.Controllers
                     {
                         CreatedTime = DateTime.UtcNow,
                         OrgUrl = OrgUrl,
-                        UniqueChar = uniqueChar,
                         RandomChar = rndChar,
+                        UniqueChar = uniqueChar,
                         EndTime = DateTime.UtcNow.AddDays(EndTime),
                         CutUrl = $"{ServiceUrl}/{uniqueChar}",
-                        user = "atayaz"
+                        user = user,
+                        Click = 1
                     };
                     originalUrl = new OriginalUrl
                     {
-                        Url = OrgUrl,
-                        Click = 1
+                        Url = OrgUrl
                     };
+                    cr_user.Kısaltma += 1;
+                    var filter = Builders<User>.Filter.Eq(s => s.Name, user);
+                    var update = Builders<User>.Update.Set(s => s.Kısaltma, cr_user.Kısaltma);
+                    userList.UpdateOneAsync(filter, update);
                 }
-                await originalUrlColleciton.InsertOneAsync(originalUrl);
+                await originalUrlList.InsertOneAsync(originalUrl);
                 await ShortUrlList.InsertOneAsync(ShortUrl);
             }
 
@@ -172,5 +188,20 @@ namespace LinkShortener.Controllers
                 "0123456789";
             return new string(alphanumericCharacters.Select(c => alphanumericCharacters[random.Next(alphanumericCharacters.Length)]).Take(6).ToArray());
         }
+        //public async Task<IActionResult> ClickCounter(string orgUrl)
+        //{
+        //    string user = HttpContext.Session.GetString("user");
+        //    var shortenedUrlCollection = mongoDatabase_database.GetCollection<ShortenedUrl>("shortened-urls");
+        //    var shortenedUrl = await shortenedUrlCollection.AsQueryable().FirstOrDefaultAsync(x => x.OriginalUrl == orgUrl && x.User == user);
+        //    shortenedUrl.Click += 1;
+        //    var filter = Builders<ShortenedUrl>.Filter.And
+        //        (
+        //            Builders<ShortenedUrl>.Filter.Where(x => x.User == user),
+        //            Builders<ShortenedUrl>.Filter.Where(x => x.OriginalUrl == orgUrl)
+        //        );
+        //    var update = Builders<ShortenedUrl>.Update.Set(s => s.Click, shortenedUrl.Click);
+        //    shortenedUrlCollection.UpdateOneAsync(filter, update);
+        //    return Redirect(shortenedUrl.OriginalUrl);
+        //}
     }
 }

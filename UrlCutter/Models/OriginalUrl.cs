@@ -8,6 +8,5 @@ namespace UrlCutter.Models
         [BsonId]
         public ObjectId Id { get; set; }
         public string Url { get; set; }
-        public int Click { get; set; }
     }
 }

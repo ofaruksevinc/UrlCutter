@@ -15,5 +15,6 @@ namespace UrlCutter.Models
         public string user {get; set; } 
         public DateTime CreatedTime { get; set; }
         public DateTime EndTime { get; set; }
+        public int Click { get; set; }
     }
 }

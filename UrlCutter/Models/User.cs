@@ -10,5 +10,6 @@ namespace UrlCutter.Models
         public string Name { get; set; }
         public string pass { get; set; }
         public bool Role { get; set; }
+        public int? Kısaltma { get; set; }
     }
 }
